@@ -1,0 +1,682 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Erosão do Petrodólar: Cenários 2026-2100</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #0f172a 0%, #1e3a8a 50%, #0f172a 100%);
+            color: #e2e8f0;
+            padding: 20px;
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 40px;
+            padding: 30px;
+            background: rgba(15, 23, 42, 0.6);
+            border-radius: 15px;
+            backdrop-filter: blur(10px);
+        }
+
+        h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            color: #60a5fa;
+        }
+
+        .subtitle {
+            color: #cbd5e1;
+            font-size: 1.1em;
+        }
+
+        .author {
+            margin-top: 15px;
+            font-size: 0.9em;
+            color: #94a3b8;
+        }
+
+        .scenario-selector {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin-bottom: 40px;
+        }
+
+        .scenario-card {
+            padding: 25px;
+            background: rgba(30, 41, 59, 0.6);
+            border: 2px solid #475569;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.3s;
+            backdrop-filter: blur(10px);
+        }
+
+        .scenario-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(59, 130, 246, 0.3);
+        }
+
+        .scenario-card.active {
+            border-color: currentColor;
+            background: rgba(59, 130, 246, 0.2);
+            box-shadow: 0 0 20px currentColor;
+        }
+
+        .scenario-card h3 {
+            margin-bottom: 10px;
+            font-size: 1.3em;
+        }
+
+        .chart-container {
+            background: rgba(30, 41, 59, 0.6);
+            padding: 30px;
+            border-radius: 12px;
+            margin-bottom: 30px;
+            backdrop-filter: blur(10px);
+        }
+
+        .chart-container h2 {
+            margin-bottom: 20px;
+            color: #60a5fa;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .chart-wrapper {
+            position: relative;
+            height: 400px;
+        }
+
+        .grid-2 {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(600px, 1fr));
+            gap: 30px;
+            margin-bottom: 30px;
+        }
+
+        .year-selector {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            margin: 30px 0;
+        }
+
+        .year-btn {
+            padding: 12px 30px;
+            background: rgba(51, 65, 85, 0.8);
+            border: none;
+            border-radius: 8px;
+            color: #cbd5e1;
+            font-size: 1.1em;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .year-btn:hover {
+            background: rgba(71, 85, 105, 0.9);
+        }
+
+        .year-btn.active {
+            background: #3b82f6;
+            color: white;
+        }
+
+        .timeline {
+            background: rgba(30, 41, 59, 0.6);
+            padding: 30px;
+            border-radius: 12px;
+            backdrop-filter: blur(10px);
+        }
+
+        .timeline-item {
+            display: flex;
+            gap: 20px;
+            padding: 20px;
+            margin-bottom: 15px;
+            background: rgba(51, 65, 85, 0.5);
+            border-radius: 8px;
+            transition: all 0.3s;
+        }
+
+        .timeline-item:hover {
+            background: rgba(71, 85, 105, 0.7);
+            transform: translateX(5px);
+        }
+
+        .timeline-year {
+            font-size: 1.5em;
+            font-weight: bold;
+            color: #60a5fa;
+            min-width: 80px;
+        }
+
+        .timeline-content {
+            flex: 1;
+        }
+
+        .impact-badge {
+            display: inline-block;
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 0.85em;
+            font-weight: bold;
+            margin-top: 8px;
+        }
+
+        .impact-high {
+            background: rgba(239, 68, 68, 0.2);
+            color: #fca5a5;
+        }
+
+        .impact-medium {
+            background: rgba(251, 191, 36, 0.2);
+            color: #fcd34d;
+        }
+
+        .impact-transform {
+            background: rgba(168, 85, 247, 0.2);
+            color: #c084fc;
+        }
+
+        .summary {
+            background: linear-gradient(135deg, rgba(30, 58, 138, 0.5), rgba(88, 28, 135, 0.5));
+            padding: 30px;
+            border-radius: 12px;
+            margin-top: 40px;
+            backdrop-filter: blur(10px);
+        }
+
+        .summary h2 {
+            color: #60a5fa;
+            margin-bottom: 15px;
+        }
+
+        .summary p {
+            line-height: 1.8;
+            font-size: 1.05em;
+        }
+
+        footer {
+            text-align: center;
+            margin-top: 50px;
+            padding: 20px;
+            color: #94a3b8;
+            font-size: 0.9em;
+        }
+
+        .icon {
+            width: 24px;
+            height: 24px;
+            display: inline-block;
+        }
+
+        @media (max-width: 768px) {
+            h1 {
+                font-size: 1.8em;
+            }
+            
+            .grid-2 {
+                grid-template-columns: 1fr;
+            }
+            
+            .chart-wrapper {
+                height: 300px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🌍 Erosão do Petrodólar: Cenários 2026-2100</h1>
+            <p class="subtitle">Dashboard interativo com projeções de longo prazo do sistema monetário internacional</p>
+            <p class="author">Autor: ale didree | Versão 2.0 | Data: 2026-01-05</p>
+        </header>
+
+        <div class="chart-container">
+            <h2>🛡️ Seleção de Cenário</h2>
+            <div class="scenario-selector">
+                <div class="scenario-card active" data-scenario="base" style="border-color: #3b82f6;">
+                    <h3 style="color: #3b82f6;">Cenário Base</h3>
+                    <p>Erosão gradual e controlada do petrodólar com transição multipolar ordenada</p>
+                </div>
+                <div class="scenario-card" data-scenario="accelerated" style="border-color: #ef4444;">
+                    <h3 style="color: #ef4444;">Erosão Acelerada</h3>
+                    <p>Crise de confiança no USD, transição abrupta para sistemas alternativos</p>
+                </div>
+                <div class="scenario-card" data-scenario="resilient" style="border-color: #10b981;">
+                    <h3 style="color: #10b981;">Resiliência USD</h3>
+                    <p>Reformas estruturais mantêm relevância do dólar em nova configuração</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="chart-container">
+            <h2>📉 Participação do USD no Comércio Global de Energia (%)</h2>
+            <div class="chart-wrapper">
+                <canvas id="usdShareChart"></canvas>
+            </div>
+        </div>
+
+        <div class="chart-container">
+            <h2>⚠️ Taxa de Juros dos Treasuries dos EUA (%)</h2>
+            <div class="chart-wrapper">
+                <canvas id="interestRateChart"></canvas>
+            </div>
+        </div>
+
+        <div class="chart-container">
+            <h2>📅 Análise por Período</h2>
+            <div class="year-selector">
+                <button class="year-btn active" data-year="2050">2050</button>
+                <button class="year-btn" data-year="2075">2075</button>
+                <button class="year-btn" data-year="2100">2100</button>
+            </div>
+        </div>
+
+        <div class="grid-2">
+            <div class="chart-container">
+                <h2>💰 Sistemas Monetários em <span id="currentYear">2050</span></h2>
+                <div class="chart-wrapper">
+                    <canvas id="monetaryChart"></canvas>
+                </div>
+            </div>
+
+            <div class="chart-container">
+                <h2>⚡ Poder Geopolítico dos EUA em <span id="currentYearRadar">2050</span></h2>
+                <div class="chart-wrapper">
+                    <canvas id="geopoliticalChart"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <div class="timeline">
+            <h2 style="color: #60a5fa; margin-bottom: 20px;">🕐 Eventos Críticos Projetados (2027-2095)</h2>
+            <div class="timeline-item">
+                <div class="timeline-year">2027</div>
+                <div class="timeline-content">
+                    <div>Arábia Saudita aceita yuan para 15% das vendas de petróleo</div>
+                    <span class="impact-badge impact-medium">Impacto: Médio</span>
+                </div>
+            </div>
+            <div class="timeline-item">
+                <div class="timeline-year">2032</div>
+                <div class="timeline-content">
+                    <div>BRICS lança moeda digital comum para comércio intra-bloco</div>
+                    <span class="impact-badge impact-high">Impacto: Alto</span>
+                </div>
+            </div>
+            <div class="timeline-item">
+                <div class="timeline-year">2038</div>
+                <div class="timeline-content">
+                    <div>China se torna maior economia mundial em termos nominais</div>
+                    <span class="impact-badge impact-high">Impacto: Alto</span>
+                </div>
+            </div>
+            <div class="timeline-item">
+                <div class="timeline-year">2045</div>
+                <div class="timeline-content">
+                    <div>Bitcoin atinge $1M, adotado como reserva por 50+ países</div>
+                    <span class="impact-badge impact-high">Impacto: Muito Alto</span>
+                </div>
+            </div>
+            <div class="timeline-item">
+                <div class="timeline-year">2055</div>
+                <div class="timeline-content">
+                    <div>Transição energética completa reduz relevância do petróleo</div>
+                    <span class="impact-badge impact-high">Impacto: Crítico</span>
+                </div>
+            </div>
+            <div class="timeline-item">
+                <div class="timeline-year">2068</div>
+                <div class="timeline-content">
+                    <div>Sistema monetário global baseado em blockchain multilateral</div>
+                    <span class="impact-badge impact-transform">Impacto: Transformador</span>
+                </div>
+            </div>
+            <div class="timeline-item">
+                <div class="timeline-year">2080</div>
+                <div class="timeline-content">
+                    <div>Fusão monetária: USD-EUR-CNY em cesta digital global</div>
+                    <span class="impact-badge impact-transform">Impacto: Revolucionário</span>
+                </div>
+            </div>
+            <div class="timeline-item">
+                <div class="timeline-year">2095</div>
+                <div class="timeline-content">
+                    <div>Governança monetária descentralizada via DAO supranacional</div>
+                    <span class="impact-badge impact-transform">Impacto: Paradigmático</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="summary">
+            <h2>📊 Síntese: <span id="summaryTitle">Cenário Base</span></h2>
+            <p id="summaryText">
+                Transição multipolar ordenada com coexistência de múltiplos sistemas. USD mantém 30% de participação até 2100.
+                Juros sobem gradualmente para 10%. Emergência de sistema híbrido global baseado em cestas de moedas e ativos digitais.
+            </p>
+        </div>
+
+        <footer>
+            <p>© 2026 ale didree | Projeções conceituais para fins de análise estratégica</p>
+            <p style="margin-top: 10px;">
+                Metodologia: Análise histórica institucional + Simulações de cenários macroeconômicos + Mapeamento geopolítico
+            </p>
+        </footer>
+    </div>
+
+    <script>
+        // Dados
+        const usdShareData = {
+            labels: [2026, 2030, 2040, 2050, 2060, 2070, 2080, 2090, 2100],
+            base: [88, 82, 70, 58, 48, 40, 35, 32, 30],
+            accelerated: [88, 75, 50, 30, 20, 15, 12, 10, 8],
+            resilient: [88, 85, 78, 70, 65, 60, 55, 52, 50]
+        };
+
+        const interestRateData = {
+            labels: [2026, 2030, 2040, 2050, 2060, 2070, 2080, 2090, 2100],
+            base: [4.5, 5.2, 6.5, 7.8, 8.5, 9.0, 9.2, 9.5, 10.0],
+            accelerated: [4.5, 7.5, 12.0, 15.5, 18.0, 20.0, 22.0, 23.5, 25.0],
+            resilient: [4.5, 4.8, 5.5, 6.0, 6.5, 7.0, 7.2, 7.5, 8.0]
+        };
+
+        const monetarySystems = {
+            2050: {
+                base: {labels: ['USD', 'Yuan/CIPS', 'Euro', 'Bitcoin/Cripto', 'Outros'], data: [58, 22, 12, 5, 3]},
+                accelerated: {labels: ['USD', 'Yuan/CIPS', 'Bitcoin/Cripto', 'Euro', 'Outros'], data: [30, 35, 18, 10, 7]},
+                resilient: {labels: ['USD', 'Yuan/CIPS', 'Euro', 'Bitcoin/Cripto', 'Outros'], data: [70, 15, 10, 3, 2]}
+            },
+            2075: {
+                base: {labels: ['USD', 'Yuan/CIPS', 'Bitcoin/Cripto', 'Euro', 'Outros'], data: [40, 28, 15, 10, 7]},
+                accelerated: {labels: ['Bitcoin/Cripto', 'Yuan/CIPS', 'USD', 'Euro', 'Outros'], data: [35, 32, 15, 8, 10]},
+                resilient: {labels: ['USD', 'Yuan/CIPS', 'Euro', 'Bitcoin/Cripto', 'Outros'], data: [60, 20, 12, 5, 3]}
+            },
+            2100: {
+                base: {labels: ['Sistema Híbrido Global', 'Yuan/CIPS', 'USD', 'Bitcoin/Cripto'], data: [35, 30, 30, 5]},
+                accelerated: {labels: ['Bitcoin/Cripto', 'Yuan Digital', 'Sistemas Regionais', 'USD'], data: [45, 30, 15, 10]},
+                resilient: {labels: ['USD Reformado', 'Yuan/CIPS', 'Sistema Híbrido', 'Bitcoin/Cripto'], data: [50, 25, 15, 10]}
+            }
+        };
+
+        const geopoliticalData = {
+            2050: {
+                base: [60, 45, 50, 55, 60],
+                accelerated: [30, 25, 25, 30, 40],
+                resilient: [75, 60, 65, 70, 75]
+            },
+            2075: {
+                base: [45, 35, 40, 42, 50],
+                accelerated: [20, 15, 20, 22, 30],
+                resilient: [65, 50, 60, 62, 70]
+            },
+            2100: {
+                base: [35, 30, 35, 38, 45],
+                accelerated: [15, 10, 18, 20, 25],
+                resilient: [55, 45, 55, 58, 65]
+            }
+        };
+
+        const summaries = {
+            base: 'Transição multipolar ordenada com coexistência de múltiplos sistemas. USD mantém 30% de participação até 2100. Juros sobem gradualmente para 10%. Emergência de sistema híbrido global baseado em cestas de moedas e ativos digitais.',
+            accelerated: 'Crise de confiança massiva leva a abandono rápido do USD. Participação cai para 8% em 2100. Juros explodem para 25%. Bitcoin e cripto tornam-se dominantes (45% em 2100). Risco de instabilidade sistêmica e fragmentação monetária extrema.',
+            resilient: 'Reformas estruturais dos EUA (fiscal, energética, digital) mantêm USD relevante com 50% de participação em 2100. Juros controlados em 8%. Sistema USD reformado coexiste harmonicamente com Yuan e sistemas regionais. Menor volatilidade e transição mais estável.'
+        };
+
+        const colors = {
+            base: '#3b82f6',
+            accelerated: '#ef4444',
+            resilient: '#10b981'
+        };
+
+        // Estado
+        let currentScenario = 'base';
+        let currentYear = 2050;
+
+        // Gráficos
+        let usdChart, interestChart, monetaryChart, geoChart;
+
+        // Inicializar gráficos
+        function initCharts() {
+            // USD Share Chart
+            const ctx1 = document.getElementById('usdShareChart').getContext('2d');
+            usdChart = new Chart(ctx1, {
+                type: 'line',
+                data: {
+                    labels: usdShareData.labels,
+                    datasets: [
+                        {
+                            label: 'Base',
+                            data: usdShareData.base,
+                            borderColor: colors.base,
+                            backgroundColor: colors.base + '40',
+                            fill: true,
+                            tension: 0.4,
+                            borderWidth: 3
+                        },
+                        {
+                            label: 'Acelerado',
+                            data: usdShareData.accelerated,
+                            borderColor: colors.accelerated,
+                            backgroundColor: colors.accelerated + '40',
+                            fill: true,
+                            tension: 0.4,
+                            borderWidth: 3
+                        },
+                        {
+                            label: 'Resiliente',
+                            data: usdShareData.resilient,
+                            borderColor: colors.resilient,
+                            backgroundColor: colors.resilient + '40',
+                            fill: true,
+                            tension: 0.4,
+                            borderWidth: 3
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            labels: { color: '#e2e8f0', font: {size: 14} }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            ticks: { color: '#94a3b8' },
+                            grid: { color: '#334155' }
+                        },
+                        x: {
+                            ticks: { color: '#94a3b8' },
+                            grid: { color: '#334155' }
+                        }
+                    }
+                }
+            });
+
+            // Interest Rate Chart
+            const ctx2 = document.getElementById('interestRateChart').getContext('2d');
+            interestChart = new Chart(ctx2, {
+                type: 'line',
+                data: {
+                    labels: interestRateData.labels,
+                    datasets: [
+                        {
+                            label: 'Base',
+                            data: interestRateData.base,
+                            borderColor: colors.base,
+                            tension: 0.4,
+                            borderWidth: 3
+                        },
+                        {
+                            label: 'Acelerado',
+                            data: interestRateData.accelerated,
+                            borderColor: colors.accelerated,
+                            tension: 0.4,
+                            borderWidth: 3
+                        },
+                        {
+                            label: 'Resiliente',
+                            data: interestRateData.resilient,
+                            borderColor: colors.resilient,
+                            tension: 0.4,
+                            borderWidth: 3
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            labels: { color: '#e2e8f0', font: {size: 14} }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            ticks: { color: '#94a3b8' },
+                            grid: { color: '#334155' }
+                        },
+                        x: {
+                            ticks: { color: '#94a3b8' },
+                            grid: { color: '#334155' }
+                        }
+                    }
+                }
+            });
+
+            // Monetary Systems Chart
+            updateMonetaryChart();
+
+            // Geopolitical Chart
+            updateGeopoliticalChart();
+        }
+
+        function updateMonetaryChart() {
+            const ctx = document.getElementById('monetaryChart').getContext('2d');
+            const data = monetarySystems[currentYear][currentScenario];
+            
+            if (monetaryChart) monetaryChart.destroy();
+            
+            monetaryChart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: data.labels,
+                    datasets: [{
+                        label: 'Participação (%)',
+                        data: data.data,
+                        backgroundColor: colors[currentScenario],
+                        borderColor: colors[currentScenario],
+                        borderWidth: 2
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            labels: { color: '#e2e8f0', font: {size: 14} }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            ticks: { color: '#94a3b8' },
+                            grid: { color: '#334155' }
+                        },
+                        x: {
+                            ticks: { color: '#94a3b8' },
+                            grid: { color: '#334155' }
+                        }
+                    }
+                }
+            });
+        }
+
+        function updateGeopoliticalChart() {
+            const ctx = document.getElementById('geopoliticalChart').getContext('2d');
+            const data = geopoliticalData[currentYear][currentScenario];
+            
+            if (geoChart) geoChart.destroy();
+            
+            geoChart = new Chart(ctx, {
+                type: 'radar',
+                data: {
+                    labels: ['Poder de Sanção', 'Controle Energético', 'Capacidade Fiscal', 'Influência Global', 'Estabilidade'],
+                    datasets: [{
+                        label: currentScenario.charAt(0).toUpperCase() + currentScenario.slice(1),
+                        data: data,
+                        backgroundColor: colors[currentScenario] + '40',
+                        borderColor: colors[currentScenario],
+                        borderWidth: 3
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            labels: { color: '#e2e8f0', font: {size: 14} }
+                        }
+                    },
+                    scales: {
+                        r: {
+                            ticks: { color: '#94a3b8' },
+                            grid: { color: '#334155' },
+                            pointLabels: { color: '#94a3b8' }
+                        }
+                    }
+                }
+            });
+        }
+
+        // Event Listeners
+        document.querySelectorAll('.scenario-card').forEach(card => {
+            card.addEventListener('click', function() {
+                document.querySelectorAll('.scenario-card').forEach(c => c.classList.remove('active'));
+                this.classList.add('active');
+                currentScenario = this.dataset.scenario;
+                updateMonetaryChart();
+                updateGeopoliticalChart();
+                document.getElementById('summaryTitle').textContent = this.querySelector('h3').textContent;
+                document.getElementById('summaryText').textContent = summaries[currentScenario];
+            });
+        });
+
+        document.querySelectorAll('.year-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                document.querySelectorAll('.year-btn').forEach(b => b.classList.remove('active'));
+                this.classList.add('active');
+                currentYear = parseInt(this.dataset.year);
+                document.getElementById('currentYear').textContent = currentYear;
+                document.getElementById('currentYearRadar').textContent = currentYear;
+                updateMonetaryChart();
+                updateGeopoliticalChart();
+            });
+        });
+
+        // Inicializar
+        initCharts();
+    </script>
+</body>
+</html>
